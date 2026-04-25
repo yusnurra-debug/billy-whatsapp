@@ -5,3 +5,4 @@ twilio==9.3.7
 gspread==6.1.4
 google-auth==2.36.0
 python-multipart==0.0.17
+requests==2.32.3
