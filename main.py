@@ -10,7 +10,7 @@ from fastapi import FastAPI, Form, Request, Response
 from twilio.twiml.messaging_response import MessagingResponse
 from google.oauth2.service_account import Credentials
 
-app = FastAPI(title="Billy — WhatsApp Expense Tracker")
+app = FastAPI(title="Billy â WhatsApp Expense Tracker")
 
 # Sheet structure: DAY | MONTH | YEAR | MERCHANT | AMOUNT (EUR) | CATEGORY
 COLUMNS = ["DAY", "MONTH", "YEAR", "MERCHANT", "AMOUNT (EUR)", "CATEGORY"]
@@ -76,7 +76,7 @@ Return ONLY raw JSON like:
 def parse_expense_text(text: str) -> dict:
     client = get_anthropic()
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=600,
         system=build_system_prompt(),
         messages=[{"role": "user", "content": text}],
@@ -99,7 +99,7 @@ def parse_expense_image(image_url: str) -> dict:
 
     client2 = get_anthropic()
     response = client2.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=800,
         system=build_system_prompt() + """
 
@@ -158,13 +158,13 @@ async def whatsapp_webhook(
     # Help
     if body.lower() in {"help", "?", "/help", "hi", "hello", "halo", "bantuan"}:
         reply = (
-            "*Billy — Expense Tracker* 💳\n\n"
+            "*Billy â Expense Tracker* ð³\n\n"
             "I log expenses directly to your spreadsheet!\n\n"
-            "📝 *Text* — type naturally:\n"
-            "• \"Aldi 12.50\"\n"
-            "• \"Uber Eats 24 food\"\n"
-            "• \"Metro 2.40 transport\"\n\n"
-            "📸 *Photo* — send a pic of your receipt\n"
+            "ð *Text* â type naturally:\n"
+            "â¢ \"Aldi 12.50\"\n"
+            "â¢ \"Uber Eats 24 food\"\n"
+            "â¢ \"Metro 2.40 transport\"\n\n"
+            "ð¸ *Photo* â send a pic of your receipt\n"
             "I\'ll read the total and log it automatically!\n\n"
             "_Categories: Food, Grocery, Cafe, Shopping,_\n"
             "_Beauty, Transport, Photo, Culture, Health,_\n"
@@ -181,17 +181,17 @@ async def whatsapp_webhook(
             amt = summary.get("amount", 0)
             item = summary.get("item", "Receipt")
             cat = summary.get("category", "")
-            reply = f"📸 *Receipt scanned!*\n✅ {item}\n💶 EUR{amt:.2f}"
+            reply = f"ð¸ *Receipt scanned!*\nâ {item}\nð¶ EUR{amt:.2f}"
             if cat:
-                reply += f"\n🏷 {cat}"
-            reply += "\n\n_Added to your Data sheet!_ 📊"
+                reply += f"\nð· {cat}"
+            reply += "\n\n_Added to your Data sheet!_ ð"
         except Exception as e:
-            reply = f"❌ Couldn\'t read receipt: {str(e)[:80]}\n\nTry typing it instead, e.g. \"Aldi 12.50 grocery\""
+            reply = f"â Couldn\'t read receipt: {str(e)[:80]}\n\nTry typing it instead, e.g. \"Aldi 12.50 grocery\""
         return xml_response(reply)
 
     # Empty
     if not body:
-        return xml_response("Send me an expense or a receipt photo! Type help for examples. 💳")
+        return xml_response("Send me an expense or a receipt photo! Type help for examples. ð³")
 
     # Text expense
     try:
@@ -203,16 +203,16 @@ async def whatsapp_webhook(
         cat = summary.get("category", "")
         day = parsed.get("DAY", "")
         month = parsed.get("MONTH", "")
-        reply = f"✅ *{item}*\n💶 EUR{amt:.2f}"
+        reply = f"â *{item}*\nð¶ EUR{amt:.2f}"
         if cat:
-            reply += f"\n🏷 {cat}"
+            reply += f"\nð· {cat}"
         if day and month:
-            reply += f"\n📅 {day} {month}"
-        reply += "\n\n_Added to your Data sheet!_ 📊"
+            reply += f"\nð {day} {month}"
+        reply += "\n\n_Added to your Data sheet!_ ð"
     except gspread.exceptions.APIError as e:
-        reply = f"❌ Sheets error: {str(e)[:80]}\n\nMake sure the sheet is shared with the service account."
+        reply = f"â Sheets error: {str(e)[:80]}\n\nMake sure the sheet is shared with the service account."
     except Exception as e:
-        reply = f"❌ {str(e)[:100]}\n\nTry: \"Aldi 12.50\" or type help"
+        reply = f"â {str(e)[:100]}\n\nTry: \"Aldi 12.50\" or type help"
 
     return xml_response(reply)
 
